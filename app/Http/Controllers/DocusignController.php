@@ -14,116 +14,160 @@ use DocuSign\eSign\Model\SignHere;
 use DocuSign\eSign\Model\Tabs;
 use DocuSign\eSign\Model\RecipientViewRequest;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-
-use Illuminate\Support\Facades\Log;
-
+use App\Models\Card;
 use Exception;
+use Illuminate\Support\Facades\Http;
 
 class DocusignController extends Controller
 {
-    private $signer_client_id = 1000;
+    private $signer_client_id = 1000; // Identificador do signatário interno (client_user_id)
 
-    // Página de upload de PDFs
+    // Página de upload de PDFs (mantido como solicitado)
     public function showForm()
     {
-        $uploadPath = public_path('uploads');
-    
-        $files = file_exists($uploadPath)
-            ? collect(scandir($uploadPath))->filter(function ($file) use ($uploadPath) {
-                return is_file($uploadPath . DIRECTORY_SEPARATOR . $file) && Str::endsWith($file, '.pdf');
-            })->values()
-            : collect([]);
-    
+        $files = Card::latest()->get();
         return view('docusign.upload', compact('files'));
     }
-    
-    
 
-    // Função para processar o upload dos PDFs
+    // Upload dos PDFs (mantido como solicitado)
     public function uploadPdf(Request $request)
     {
-        // Validação dos arquivos enviados
+        // Validação dos campos
         $request->validate([
-            'pdfs.*' => 'required|mimes:pdf|max:10240',
+            'title' => 'required|string|max:64',
+            'description' => 'nullable|string|max:256',
+            'pdfs.*' => 'required|mimes:pdf|max:10240', // Máximo de 10MB por arquivo
         ]);
     
-        // Verifique o caminho do diretório de upload
+        // Caminho para salvar os arquivos PDF
         $uploadPath = public_path('uploads');
-    
-        // Verifique se o diretório de uploads existe, e crie-o se necessário
         if (!file_exists($uploadPath)) {
-            mkdir($uploadPath, 0775, true); // Cria a pasta, se necessário
+            mkdir($uploadPath, 0775, true);
         }
     
-        // Verifique se o diretório é gravável (somente para depuração no Windows)
-        if (!is_writable($uploadPath)) {
-            return redirect()->back()->with('error', 'O diretório de upload não tem permissões de escrita.');
-        }
-    
-        // Processa cada arquivo PDF
+        // Salvar cada PDF e inserir no banco de dados
         foreach ($request->file('pdfs') as $file) {
-            // Nome do arquivo
-            $fileName = $file->getClientOriginalName();
+            // Gerar nome único para o arquivo
+            $fileName = uniqid() . '_' . $file->getClientOriginalName();
     
-            // Mover o arquivo para o diretório 'uploads'
-            $file->move($uploadPath, $fileName); // Método adequado no Windows
+            // Mover o arquivo para o diretório de uploads
+            $file->move($uploadPath, $fileName);
     
-            // Log para verificar se o arquivo foi movido
-            Log::info("Arquivo {$fileName} enviado para o diretório {$uploadPath}");
+            // Salvar informações no banco de dados
+            Card::create([
+                'title' => $request->title,
+                'description' => $request->descricao,
+                'filename' => $fileName, // Usando 'filename' conforme o seu modelo
+            ]);
         }
     
+        // Retornar uma mensagem de sucesso
         return redirect()->back()->with('success', 'PDFs enviados com sucesso.');
     }
     
+    
 
+    // Iniciar autenticação OAuth (DocuSign)
+    public function authenticate()
+    {
+        $query = http_build_query([
+            'response_type' => 'code',
+            'scope' => 'signature',
+            'client_id' => env('DOCUSIGN_CLIENT_ID'),
+            'redirect_uri' => env('DOCUSIGN_REDIRECT_URI'),
+        ]);
 
+        return redirect(env('DOCUSIGN_AUTH_URL') . '?' . $query);
+    }
 
-    // Assinar o documento PDF
+    // Callback do DocuSign (troca código por token de acesso)
+    public function callback(Request $request)
+    {
+        $code = $request->get('code');
+    
+        $client_id = env('DOCUSIGN_CLIENT_ID');
+        $client_secret = env('DOCUSIGN_CLIENT_SECRET');
+        $redirect_uri = route('docusign.callback');
+        $base_url = 'https://account-d.docusign.com';
+    
+        // Trocar o código de autorização por token de acesso
+        $response = Http::asForm()->post("$base_url/oauth/token", [
+            'grant_type' => 'authorization_code',
+            'code' => $code,
+            'client_id' => $client_id,
+            'client_secret' => $client_secret,
+            'redirect_uri' => $redirect_uri,
+        ]);
+    
+        if ($response->failed()) {
+            return redirect()->route('docusign.upload')->with('error', 'Erro ao obter token de acesso.');
+        }
+    
+        $data = $response->json();
+        $access_token = $data['access_token'];
+    
+        // Buscar informações do usuário (inclui o account_id)
+        $userInfo = Http::withToken($access_token)->get("$base_url/oauth/userinfo");
+    
+        if ($userInfo->failed()) {
+            return redirect()->route('docusign.upload')->with('error', 'Erro ao obter informações do usuário.');
+        }
+    
+        $info = $userInfo->json();
+        $account_id = $info['accounts'][0]['account_id'];
+    
+        // Armazenar na sessão
+        Session::put('docusign_access_token', $access_token);
+        Session::put('docusign_account_id', $account_id);
+    
+        return redirect()->route('docusign.upload')->with('success', 'Autenticado com sucesso.');
+    }
+    
+
+    // Assinar documento
     public function signDocument($filename)
     {
         try {
-            $path = $path = public_path('uploads/' . $filename);
-            
-
+            $path = public_path('uploads/' . $filename);
             if (!file_exists($path)) {
                 return redirect()->back()->with('error', 'Arquivo não encontrado.');
             }
 
-            $access_token = Session::get('docusign_auth_code');
-            $account_id = env('DOCUSIGN_ACCOUNT_ID');
+            $access_token = Session::get('docusign_access_token');
+
+            if (!$access_token) {
+                return redirect()->route('docusign.authenticate');
+            }
+
+            $account_id = Session::get('docusign_account_id');
+
             $base_path = env('DOCUSIGN_BASE_URL');
 
             $config = new Configuration();
             $config->setHost($base_path);
             $config->addDefaultHeader('Authorization', 'Bearer ' . $access_token);
+
             $api_client = new ApiClient($config);
             $envelope_api = new EnvelopesApi($api_client);
 
-            // Ler o arquivo PDF e convertê-lo para base64
             $content_bytes = file_get_contents($path);
-            $base64_file_content = base64_encode($content_bytes);
-
             $document = new Document([
-                'document_base64' => $base64_file_content,
+                'document_base64' => base64_encode($content_bytes),
                 'name' => $filename,
                 'file_extension' => 'pdf',
                 'document_id' => 1,
             ]);
 
-            // Criar o signatário
             $signer = new Signer([
-                'email' => 'shaivroy1@gmail.com',
+                'email' => 'shaivroy1@gmail.com', // Substitua futuramente pelo e-mail dinâmico
                 'name' => 'Shaiv',
                 'recipient_id' => "1",
                 'routing_order' => "1",
                 'client_user_id' => $this->signer_client_id,
             ]);
 
-            // Adicionar o campo de assinatura no documento
             $sign_here = new SignHere([
-                'anchor_string' => '/sn1/',  // Posição do campo de assinatura
+                'anchor_string' => '/sn1/',
                 'anchor_units' => 'pixels',
                 'anchor_y_offset' => '10',
                 'anchor_x_offset' => '20',
@@ -131,20 +175,21 @@ class DocusignController extends Controller
 
             $signer->setTabs(new Tabs(['sign_here_tabs' => [$sign_here]]));
 
-            // Definir envelope com o documento e o signatário
+            $email_subject = "Por favor, assine este documento: " . substr($filename, 0, 80); // Trunca o nome do arquivo para garantir que o limite não seja excedido
+            $email_subject = strlen($email_subject) > 100 ? substr($email_subject, 0, 100) : $email_subject;
+            
             $envelope_definition = new EnvelopeDefinition([
-                'email_subject' => "Por favor, assine este documento: $filename",
+                'email_subject' => $email_subject,
                 'documents' => [$document],
                 'recipients' => new Recipients(['signers' => [$signer]]),
-                'status' => "sent",  // Enviar imediatamente para assinatura
+                'status' => "sent",
             ]);
+            
 
-            // Criar o envelope no DocuSign
             $envelope = $envelope_api->createEnvelope($account_id, $envelope_definition);
             $envelope_id = $envelope->getEnvelopeId();
 
-            // Criar a visualização do receptor para assinatura
-            $recipient_view_request = new RecipientViewRequest([
+            $view_request = new RecipientViewRequest([
                 'authentication_method' => 'none',
                 'client_user_id' => $this->signer_client_id,
                 'recipient_id' => '1',
@@ -153,17 +198,16 @@ class DocusignController extends Controller
                 'email' => 'shaivroy1@gmail.com',
             ]);
 
-            // Gerar a URL de assinatura
-            $results = $envelope_api->createRecipientView($account_id, $envelope_id, $recipient_view_request);
+            $results = $envelope_api->createRecipientView($account_id, $envelope_id, $view_request);
 
-            return redirect()->to($results->getUrl());  // Redirecionar o usuário para a URL de assinatura
+            return redirect()->to($results->getUrl());
 
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Erro ao iniciar assinatura: ' . $e->getMessage());
         }
     }
 
-    // Callback após o usuário assinar o documento
+    // Callback após assinatura
     public function return()
     {
         return redirect()->route('docusign.upload')->with('success', 'Documento assinado com sucesso!');

@@ -34,5 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'docusign' => [
+        'client_id' => env('DOCUSIGN_CLIENT_ID'),
+        'client_secret' => env('DOCUSIGN_CLIENT_SECRET'),
+        'redirect' => env('DOCUSIGN_REDIRECT_URI'),
+        'base_url' => env('DOCUSIGN_BASE_URL'),
+        'account_id' => env('DOCUSIGN_ACCOUNT_ID'),
+    ],
 
 ];

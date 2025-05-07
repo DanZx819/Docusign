@@ -7,7 +7,12 @@
 
     <form action="{{ route('docusign.upload.pdf') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <input type="file" name="pdfs[]" multiple accept="application/pdf">
+        <label for="title">Titulo</label>
+        <input type="text" name="title" maxlength="64">
+        <label for="descricao">Descrição</label>
+        <input type="text" name="descricao" maxlength="256">
+
+        <input type="file" name="pdfs[]"  accept="application/pdf">
         <button type="submit" class="btn btn-primary">Enviar</button>
     </form>
 
@@ -15,13 +20,21 @@
 
     <h3>Documentos enviados</h3>
 
-    <div class="row">
+    <div class="d-flex flex-wrap">
         @forelse ($files as $file)
             <div class="col-md-4">
-                <div class="card mb-3">
+                <div class="card mb-3 d-flex justify-content-start mt-3">
                     <div class="card-body">
-                        <p><strong>{{ $file }}</strong></p>
-                        <a href="{{ route('docusign.sign', ['filename' => $file]) }}" class="btn btn-success">Assinar</a>
+                        <h5 class="card-title">{{$file->title}}</h5>
+                        <h5 class="card-text">{{$file->description}}</h5>
+                        <a href="{{ route('docusign.sign', ['filename' => $file->filename]) }}" class="btn btn-success">Assinar</a>
+                        <div  class="d-flex justify-content-end mt-3">
+                            <form action="{{route('validacao.view')}}" method="get" class="d-flex gap-2" enctype="multipart/form-data">
+                                @csrf
+                                <input type="file" name="pdfenv"  accept="application/pdf"  class="form-control w-70">
+                                <button type="submit" class="btn btn-success">Enviar</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
