@@ -1,38 +1,47 @@
 @extends('templates.layout')
 
-@section('content')
-<div class="container">
-    <h2 class="mb-4">Arquivos Enviados</h2>
 
+
+@section('content')
+
+
+    <h3>Arquivos enviados</h3>
     <div class="row">
         @forelse ($files as $file)
             <div class="col-md-4">
-                <div class="card mb-4 shadow-sm">
+                <div class="card mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">{{ $file->title }}</h5>
-                        <p class="card-text">{{ $file->description }}</p>
+                        <h5>{{ $file->title }}</h5>
+                        <p>{{ $file->description }}</p>
+                        <p>Status: 
+                            @if($file->status == 0) <span class="text-warning">Em Processamento</span>
+                            @elseif($file->status == 1) <span class="text-danger">Rejeitado</span>
+                            @else <span class="text-success">Confirmado</span>
+                            @endif
+                        </p>
 
-                        <!-- Botão de download -->
-                        <a href="{{ route('files.download', ['filename' => $file->filename]) }}" class="btn btn-primary mb-2">
-                            Baixar PDF
-                        </a>
+                        <a href="{{ route('files.download', $file->filename) }}" class="btn btn-primary mb-2">Baixar PDF</a>
 
-                        <!-- Botão de confirmação de assinatura -->
-                        <form action="{{ route('files.confirm', ['id' => $file->id]) }}" method="POST" class="d-inline">
+                        <form action="{{ route('files.confirm', $file->id) }}" method="POST" class="d-inline">
                             @csrf
-                            <button type="submit" class="btn btn-success mb-2">Confirmar Assinatura</button>
+                            <button class="btn btn-success mb-2">Confirmar</button>
                         </form>
 
-                        <!-- Botão de negação de assinatura -->
-                        <form action="{{ route('files.reject', ['id' => $file->id]) }}" method="POST" class="d-inline">
+                        <form action="{{ route('files.reject', $file->id) }}" method="POST" class="d-inline">
                             @csrf
-                            <button type="submit" class="btn btn-danger mb-2">Negar Assinatura</button>
+                            <button class="btn btn-warning mb-2">Rejeitar</button>
                         </form>
+                        <form action="{{ route('files.delete', $file->id) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')  <!-- Usando DELETE porque é um tipo de requisição HTTP -->
+                            <button class="btn btn-danger mb-2" onclick="return confirm('Tem certeza que deseja excluir este arquivo?')">Excluir</button>
+                        </form>
+                        
                     </div>
                 </div>
             </div>
         @empty
-            <p>Nenhum arquivo disponível.</p>
+            <p>Nenhum arquivo enviado.</p>
         @endforelse
     </div>
 </div>

@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocusignController;
 use App\Http\Controllers\ValidacaoController;
-
+use App\Http\Controllers\FileController;
 // Página inicial (redireciona para o formulário de upload)
 Route::get('/', function () {
     return redirect()->route('docusign.upload');
@@ -27,8 +27,14 @@ Route::get('docusign/sign/{filename}', [DocusignController::class, 'signDocument
 // Callback após a assinatura do documento
 Route::get('docusign/return', [DocusignController::class, 'return'])->name('docusign.return');
 
+Route::delete('/docusign/delete/{id}', [DocusignController::class, 'delete'])->name('docusign.delete');
 
-Route::get('assinatura', [ValidacaoController::class, 'show'])->name('validacao.view');
-Route::get('/files/download/{filename}', [FileController::class, 'download'])->name('files.download');
+
+
+Route::get('/files', [FileController::class, 'show'])->name('files.view');
+Route::post('/files/upload', [FileController::class, 'upload'])->name('files.upload');
 Route::post('/files/confirm/{id}', [FileController::class, 'confirm'])->name('files.confirm');
 Route::post('/files/reject/{id}', [FileController::class, 'reject'])->name('files.reject');
+Route::get('/files/download/{filename}', [FileController::class, 'download'])->name('files.download');
+Route::delete('/files/delete/{id}', [FileController::class, 'delete'])->name('files.delete');
+

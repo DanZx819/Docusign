@@ -10,6 +10,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="{{ route('docusign.upload') }}">DocuSign Laravel</a>
+            <a class="navbar-brand" href="{{ route('files.view') }}">Menu Admin</a>
         </div>
     </nav>
 

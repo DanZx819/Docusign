@@ -15,7 +15,8 @@
         <input type="file" name="pdfs[]"  accept="application/pdf">
         <button type="submit" class="btn btn-primary">Enviar</button>
     </form>
-
+    
+    
     <hr>
 
     <h3>Documentos enviados</h3>
@@ -28,11 +29,23 @@
                         <h5 class="card-title">{{$file->title}}</h5>
                         <h5 class="card-text">{{$file->description}}</h5>
                         <a href="{{ route('docusign.sign', ['filename' => $file->filename]) }}" class="btn btn-success">Assinar</a>
+                        <form action="{{ route('docusign.delete', $file->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?')" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Excluir</button>
+                        </form>
                         <div  class="d-flex justify-content-end mt-3">
-                            <form action="{{route('validacao.view')}}" method="get" class="d-flex gap-2" enctype="multipart/form-data">
+                            <form action="{{route('files.upload')}}" method="post" class="d-flex gap-2" enctype="multipart/form-data">
                                 @csrf
-                                <input type="file" name="pdfenv"  accept="application/pdf"  class="form-control w-70">
-                                <button type="submit" class="btn btn-success">Enviar</button>
+                                <form action="{{route('files.upload')}}" method="post" class="d-flex gap-2" enctype="multipart/form-data">
+                                    @csrf
+                                    <input type="hidden" name="title" value="{{ $file->title }}">
+                                    <input type="hidden" name="description" value="{{ $file->description }}">
+                                    
+                                    <input type="file" name="pdfenv" accept="application/pdf" class="form-control w-70" required>
+                                    <button type="submit" class="btn btn-success">Enviar</button>
+                                </form>
+                                
                             </form>
                         </div>
                     </div>

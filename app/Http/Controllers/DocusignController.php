@@ -212,4 +212,23 @@ class DocusignController extends Controller
     {
         return redirect()->route('docusign.upload')->with('success', 'Documento assinado com sucesso!');
     }
+    
+    public function delete($id)
+{
+    $card = Card::findOrFail($id);
+
+    // Caminho do arquivo físico
+    $filePath = public_path('uploads/' . $card->filename);
+
+    // Deletar o arquivo se existir
+    if (file_exists($filePath)) {
+        unlink($filePath);
+    }
+
+    // Deletar o registro no banco
+    $card->delete();
+
+    return redirect()->back()->with('success', 'Arquivo excluído com sucesso!');
+}
+
 }
