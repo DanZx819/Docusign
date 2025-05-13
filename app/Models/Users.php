@@ -4,16 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Card extends Model
+class Users extends Model
 {
     protected $fillable = [
-        'title',
-        'description',
-        'filename',
-        'turma_id',
+        'name',
+        'email',
+        'password',
+        'role',
     ];
 
-    public function turma()
+
+public function turma()
 {
     return $this->belongsTo(Turma::class);
 }

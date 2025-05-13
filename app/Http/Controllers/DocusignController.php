@@ -25,11 +25,22 @@ class DocusignController extends Controller
     // Página de upload de PDFs (mantido como solicitado)
     public function showForm()
     {
-        $files = Card::latest()->get();
-        return view('docusign.upload', compact('files'));
+        // Pega o usuário da sessão
+        $user = \App\Models\Users::find(session('user_id'));
+    
+        // Verifica se o usuário existe
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Usuário não autenticado');
+        }
+    
+        // Pega todos os cards filtrados pela turma do usuário
+        $files = Card::where('turma_id', $user->turma_id)->latest()->get();
+    
+        // Retorna a view com os dados dos cards e o usuário
+        return view('docusign.upload', compact('files', 'user'));
     }
 
-    // Upload dos PDFs (mantido como solicitado)
+
     public function uploadPdf(Request $request)
     {
         // Validação dos campos
@@ -45,7 +56,17 @@ class DocusignController extends Controller
             mkdir($uploadPath, 0775, true);
         }
     
-        // Salvar cada PDF e inserir no banco de dados
+        // Obter o usuário da sessão
+        $user = \App\Models\Users::find(session('user_id'));
+    
+        // Verificar se o usuário foi encontrado
+        if (!$user) {
+            return back()->withErrors(['error' => 'Usuário não encontrado.']);
+        }
+    
+        // Debug para verificar as informações do usuário
+        
+    
         foreach ($request->file('pdfs') as $file) {
             // Gerar nome único para o arquivo
             $fileName = uniqid() . '_' . $file->getClientOriginalName();
@@ -53,17 +74,23 @@ class DocusignController extends Controller
             // Mover o arquivo para o diretório de uploads
             $file->move($uploadPath, $fileName);
     
-            // Salvar informações no banco de dados
+            // Debug para verificar o nome do arquivo e o turma_id
+            
+    
+            // Salvar as informações no banco de dados
             Card::create([
                 'title' => $request->title,
-                'description' => $request->descricao,
-                'filename' => $fileName, // Usando 'filename' conforme o seu modelo
+                'description' => $request->description, // ou $request->descricao
+                'filename' => $fileName,
+                'turma_id' => $user->turma_id,
             ]);
         }
     
-        // Retornar uma mensagem de sucesso
         return redirect()->back()->with('success', 'PDFs enviados com sucesso.');
     }
+    
+    
+    
     
     
 

@@ -1,13 +1,18 @@
-<?php 
+<?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocusignController;
 use App\Http\Controllers\ValidacaoController;
 use App\Http\Controllers\FileController;
 // Página inicial (redireciona para o formulário de upload)
 Route::get('/', function () {
-    return redirect()->route('docusign.upload');
+    return redirect()->route('login.view');
 });
+
+
+Route::get('login', [AuthController::class, 'showLogin'])->name('login.view');
+Route::post('/login', [AuthController::class, 'login']);
 
 // Página para o upload de arquivos PDF
 Route::get('docusign', [DocusignController::class, 'showForm'])->name('docusign.upload');
