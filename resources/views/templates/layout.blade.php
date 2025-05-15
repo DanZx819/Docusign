@@ -13,6 +13,8 @@
             @if ($user && $user->role === 'admin')
                 <a class="navbar-brand" href="{{ route('files.view') }}">Menu Admin</a>
             @endif
+            <a class="navbar-brand" href="{{ route('contratos.view') }}">Contratos</a>
+
             
         </div>
     </nav>

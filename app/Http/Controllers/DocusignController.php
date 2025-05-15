@@ -39,6 +39,8 @@ class DocusignController extends Controller
         // Retorna a view com os dados dos cards e o usuário
         return view('docusign.upload', compact('files', 'user'));
     }
+   
+
 
 
     public function uploadPdf(Request $request)
