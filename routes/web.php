@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContratoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocusignController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ValidacaoController;
 use App\Http\Controllers\FileController;
 use App\Models\Contrato;
@@ -16,6 +17,7 @@ Route::get('/', function () {
 
 Route::get('login', [AuthController::class, 'showLogin'])->name('login.view');
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/logout', [AuthController::class, 'logout'])->name('login.logout');
 
 
 
@@ -59,3 +61,6 @@ Route::post('/files/reject/{id}', [FileController::class, 'reject'])->name('file
 Route::get('/files/download/{filename}', [FileController::class, 'download'])->name('files.download');
 Route::delete('/files/delete/{id}', [FileController::class, 'delete'])->name('files.delete');
 
+Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedbacks.index');
+Route::get('/feedbacks/create', [FeedbackController::class, 'create'])->name('feedbacks.create');
+Route::post('/feedbacks', [FeedbackController::class, 'store'])->name('feedbacks.store');

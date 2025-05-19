@@ -23,9 +23,12 @@
                     <a class="dropdown-item" href="{{ route('files.view') }}">Menu Admin</a>
                 @endif</li>
                   <li><a class="dropdown-item" href="{{ route('contratos.view') }}">Contratos</a></li>
-                  <li><a class="dropdown-item" href="#">Sair</a></li>
+                  <li><a class="dropdown-item" href="{{route('login.logout')}}">Sair</a></li>
                 </ul>
               </div>
+
+              <div class="container">
+                <a class="navbar-brand" href="{{ route('feedbacks.index') }}">FeedBack</a>
             
         </div>
     </nav>
