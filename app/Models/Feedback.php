@@ -16,6 +16,7 @@ class Feedback extends Model
         'descricao',
         'avaliacao',
         'usuario_id',
+        'sugestoes',
     ];
 
     public function usuario()

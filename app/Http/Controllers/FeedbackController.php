@@ -27,6 +27,7 @@ class FeedbackController extends Controller
         'titulo' => 'required|string|max:255',
         'descricao' => 'required|string',
         'avaliacao' => 'required|in:boa,neutra,ruim',
+        'sugestoes' => 'nullable|string',
     ]);
 
     $user = \App\Models\Users::find(session('user_id'));
@@ -40,6 +41,7 @@ class FeedbackController extends Controller
         'descricao' => $request->descricao,
         'avaliacao' => $request->avaliacao,
         'usuario_id' => $user->id,
+        'sugestoes' => $request->sugestoes,
     ]);
 
     return redirect()->route('feedbacks.index')->with('success', 'Feedback enviado com sucesso!');

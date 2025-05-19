@@ -22,7 +22,8 @@
                         {{ ucfirst($feedback->avaliacao) }}
                     </span>
                 </h5>
-                <p class="mb-1">{{ $feedback->descricao }}</p>
+                <p class="mb-1">Avaliação: {{ $feedback->descricao }}</p>
+                <p class="mb-1">Sugestão: {{ $feedback->sugestoes }}</p>
                 <small>Enviado por: {{ $feedback->usuario->name ?? 'Desconhecido' }}</small>
             </div>
         @endforeach

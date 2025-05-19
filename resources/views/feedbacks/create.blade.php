@@ -32,6 +32,11 @@
         </div>
 
         <div class="mb-3">
+            <label for="sugestoes" class="form-label">Sugestões (opcional)</label>
+            <textarea name="sugestoes" class="form-control" id="sugestoes" rows="3">{{ old('sugestoes') }}</textarea>
+        </div>
+
+        <div class="mb-3">
             <label for="avaliacao" class="form-label">Avaliação</label>
             <select name="avaliacao" class="form-select" id="avaliacao" required>
                 <option value="">Selecione</option>
