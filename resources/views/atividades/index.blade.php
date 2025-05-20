@@ -18,6 +18,20 @@
             <div class="card-body">
                 <p>{{ $atividade->descricao }}</p>
                 <small class="text-muted">Criado por: {{ $atividade->criador->name }}</small>
+
+                @if (session('role') !== 'admin')
+                    <form action="{{ route('entregas.store') }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                        @csrf
+                        <input type="hidden" name="atividade_id" value="{{ $atividade->id }}">
+
+                        <div class="mb-2">
+                            <label for="arquivo-{{ $atividade->id }}" class="form-label">Anexar arquivo (opcional)</label>
+                            <input type="file" name="arquivo" id="arquivo-{{ $atividade->id }}" class="form-control">
+                        </div>
+
+                        <button type="submit" class="btn btn-success">Entregar Atividade</button>
+                    </form>
+                @endif
             </div>
         </div>
     @empty

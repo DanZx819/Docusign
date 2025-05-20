@@ -28,9 +28,13 @@
                     @if ($user && $user->role === 'admin')
                         <li><a class="dropdown-item" href="{{ route('files.view') }}">Menu Admin</a></li>
                     @endif
+                    @if ($user && $user->role === 'user')
+                        <li><a class="dropdown-item" href="{{ route('dashboard.view') }}">Dashboard</a></li>
+                    @endif
                     <li><a class="dropdown-item" href="{{ route('atividades.index') }}">Atividades</a></li>
                     @if ($user && $user->role === 'admin')
                         <li><a class="dropdown-item" href="{{ route('atividades.create') }}">Criar Atividade</a></li>
+                        <li><a class="dropdown-item" href="{{ route('entregas.index') }}">Atividade Enviadas</a></li>
                     @endif
                     <li><a href="{{ route('docusign.upload') }}" class="dropdown-item">Documentos</a></li>
                     

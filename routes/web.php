@@ -8,6 +8,8 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ValidacaoController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\TransparenciaController;
+use App\Http\Controllers\EntregaController;
+use App\Http\Controllers\DashboardController;
 use App\Models\Contrato;
 
 use App\Http\Controllers\AtividadeController;
@@ -76,3 +78,10 @@ Route::get('/atividades', [AtividadeController::class, 'index'])->name('atividad
 Route::get('/atividades/criar', [AtividadeController::class, 'create'])->name('atividades.create');
 Route::post('/atividades', [AtividadeController::class, 'store'])->name('atividades.store');
 
+
+Route::post('/entregas', [EntregaController::class, 'store'])->name('entregas.store');
+Route::get('/entregas', [EntregaController::class, 'index'])->name('entregas.index');
+Route::post('/entregas/{id}/nota', [EntregaController::class, 'atribuirNota'])->name('entregas.nota');
+
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.view');
