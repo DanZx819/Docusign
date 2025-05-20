@@ -9,29 +9,40 @@
     <link rel="stylesheet" href="template.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('docusign.upload') }}">DocuSign Laravel</a>
+   <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- Logo à esquerda -->
+        <a class="navbar-brand" href="{{ route('docusign.upload') }}">DocuSign Laravel</a>
 
+        <!-- Grupo à direita -->
+        <div class="d-flex align-items-center ms-auto">
+            <!-- Link Transparência à esquerda do dropdown -->
+            <a class="navbar-brand me-3" href="{{ route('transparencia.lista') }}">Transparência</a>
+
+            <!-- Dropdown -->
             <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  {{$user->name}}
+                    {{ $user->name }}
                 </button>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu dropdown-menu-end">
+                    @if ($user && $user->role === 'admin')
+                        <li><a class="dropdown-item" href="{{ route('files.view') }}">Menu Admin</a></li>
+                    @endif
+                    <li><a class="dropdown-item" href="{{ route('atividades.index') }}">Atividades</a></li>
+                    @if ($user && $user->role === 'admin')
+                        <li><a class="dropdown-item" href="{{ route('atividades.create') }}">Criar Atividade</a></li>
+                    @endif
                     <li><a href="{{ route('docusign.upload') }}" class="dropdown-item">Documentos</a></li>
-                  <li>@if ($user && $user->role === 'admin')
-                    <a class="dropdown-item" href="{{ route('files.view') }}">Menu Admin</a>
-                @endif</li>
-                  <li><a class="dropdown-item" href="{{ route('contratos.view') }}">Contratos</a></li>
-                  <li><a class="dropdown-item" href="{{route('login.logout')}}">Sair</a></li>
+                    
+                    <li><a class="dropdown-item" href="{{ route('contratos.view') }}">Contratos</a></li>
+                    <li><a class="dropdown-item" href="{{ route('feedbacks.index') }}">FeedBack</a></li>
+                    <li><a class="dropdown-item" href="{{ route('login.logout') }}">Sair</a></li>
                 </ul>
-              </div>
-
-              <div class="container">
-                <a class="navbar-brand" href="{{ route('feedbacks.index') }}">FeedBack</a>
-            
+            </div>
         </div>
-    </nav>
+    </div>
+</nav>
+
 
     <main class="container">
         @if(session('success'))

@@ -7,8 +7,10 @@ use App\Http\Controllers\DocusignController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ValidacaoController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\TransparenciaController;
 use App\Models\Contrato;
 
+use App\Http\Controllers\AtividadeController;
 // Página inicial (redireciona para o formulário de upload)
 Route::get('/', function () {
     return redirect()->route('login.view');
@@ -64,3 +66,13 @@ Route::delete('/files/delete/{id}', [FileController::class, 'delete'])->name('fi
 Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedbacks.index');
 Route::get('/feedbacks/create', [FeedbackController::class, 'create'])->name('feedbacks.create');
 Route::post('/feedbacks', [FeedbackController::class, 'store'])->name('feedbacks.store');
+
+
+Route::get('/transparencia', [TransparenciaController::class, 'showList'])->name('transparencia.lista');
+
+
+
+Route::get('/atividades', [AtividadeController::class, 'index'])->name('atividades.index');
+Route::get('/atividades/criar', [AtividadeController::class, 'create'])->name('atividades.create');
+Route::post('/atividades', [AtividadeController::class, 'store'])->name('atividades.store');
+
