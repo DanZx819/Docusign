@@ -27,9 +27,14 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                     @if ($user && $user->role === 'admin')
                         <li><a class="dropdown-item" href="{{ route('files.view') }}">Menu Admin</a></li>
+                        <li><a class="dropdown-item" href="{{ route('entregas.corrigidas') }}">Atividades Corrigidas</a></li>
                     @endif
                     @if ($user && $user->role === 'user')
                         <li><a class="dropdown-item" href="{{ route('dashboard.view') }}">Dashboard</a></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('atividades.entregues') }}">Atividades Entregues</a>
+                        </li>
+
                     @endif
                     <li><a class="dropdown-item" href="{{ route('atividades.index') }}">Atividades</a></li>
                     @if ($user && $user->role === 'admin')

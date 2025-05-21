@@ -1,23 +1,31 @@
 <?php 
 namespace App\Http\Controllers;
 use App\Models\Atividade;
+use App\Models\Entrega;
 use Illuminate\Http\Request;
 class AtividadeController extends Controller
 {
-    public function index()
-    {
-        $user = \App\Models\Users::find(session('user_id'));
+    
+public function index()
+{
+    $user = \App\Models\Users::find(session('user_id'));
 
-        if (!$user) {
-            // Se não achar usuário na sessão, redireciona ou lança erro
-            return redirect()->route('login')->with('error', 'Usuário não autenticado.');
-        }
-
-        // Pega as atividades da turma do usuário
-        $atividades = Atividade::where('turma_id', $user->turma_id)->get();
-
-        return view('atividades.index', compact('atividades'));
+    if (!$user) {
+        return redirect()->route('login')->with('error', 'Usuário não autenticado.');
     }
+
+    // Pega IDs das atividades que o usuário já entregou
+    $atividadesEntreguesIds = Entrega::where('user_id', $user->id)
+        ->pluck('atividade_id')
+        ->toArray();
+
+    // Lista só as atividades da turma que ele AINDA NÃO entregou
+    $atividades = Atividade::where('turma_id', $user->turma_id)
+        ->whereNotIn('id', $atividadesEntreguesIds)
+        ->get();
+
+    return view('atividades.index', compact('atividades', 'user'));
+}
 
     public function store(Request $request)
     {
@@ -51,6 +59,50 @@ class AtividadeController extends Controller
     }
 
     return view('atividades.create');
+}
+public function entregues()
+{
+    $user = \App\Models\Users::find(session('user_id'));
+
+    if (!$user) {
+        return redirect()->route('login')->with('error', 'Usuário não autenticado.');
+    }
+
+    // Busca todas as entregas do usuário
+    $entregas = Entrega::with('atividade')
+        ->where('user_id', $user->id)
+        ->get();
+
+    return view('entregas.entregues', compact('entregas'));
+}
+public function destroy($id)
+{
+    $user = \App\Models\Users::find(session('user_id'));
+
+    if (!$user || $user->role !== 'admin') {
+        return redirect()->back()->with('error', 'Ação não autorizada.');
+    }
+
+    $atividade = \App\Models\Atividade::findOrFail($id);
+    $atividade->delete();
+
+    return redirect()->back()->with('success', 'Atividade deletada com sucesso.');
+}
+public function corrigidas()
+{
+    $user = \App\Models\Users::find(session('user_id'));
+
+    if (!$user) {
+        return redirect()->route('login')->with('error', 'Usuário não autenticado.');
+    }
+
+    // Busca apenas entregas que já têm nota
+    $entregasCorrigidas = \App\Models\Entrega::with('atividade')
+        ->where('user_id', $user->id)
+        ->whereNotNull('nota')
+        ->get();
+
+    return view('atividades.corrigidas', compact('entregasCorrigidas'));
 }
 
 }

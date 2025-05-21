@@ -49,10 +49,12 @@ class EntregaController extends Controller
 
         // Buscar todas as entregas feitas em atividades da turma do admin
         $entregas = Entrega::with(['user', 'atividade'])
+            ->whereNull('nota')
             ->whereHas('atividade', function ($query) use ($user) {
                 $query->where('turma_id', $user->turma_id);
             })
             ->get();
+
 
         return view('entregas.index', compact('entregas'));
     }
@@ -70,4 +72,22 @@ class EntregaController extends Controller
 
         return redirect()->back()->with('success', 'Nota atribuída com sucesso.');
     }
+    public function corrigidas()
+{
+    $user = Users::find(session('user_id'));
+
+    if (!$user || $user->role !== 'admin') {
+        return redirect()->route('login')->with('error', 'Acesso não autorizado.');
+    }
+
+    $entregas = Entrega::with(['user', 'atividade'])
+        ->whereNotNull('nota')
+        ->whereHas('atividade', function ($query) use ($user) {
+            $query->where('turma_id', $user->turma_id);
+        })
+        ->get();
+
+    return view('entregas.corrigidas', compact('entregas'));
+}
+
 }

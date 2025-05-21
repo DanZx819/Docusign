@@ -77,11 +77,15 @@ Route::get('/transparencia', [TransparenciaController::class, 'showList'])->name
 Route::get('/atividades', [AtividadeController::class, 'index'])->name('atividades.index');
 Route::get('/atividades/criar', [AtividadeController::class, 'create'])->name('atividades.create');
 Route::post('/atividades', [AtividadeController::class, 'store'])->name('atividades.store');
+Route::get('/atividades/entregues', [AtividadeController::class, 'entregues'])->name('atividades.entregues');
+Route::delete('/atividades/{id}', [AtividadeController::class, 'destroy'])->name('atividades.destroy');
+
 
 
 Route::post('/entregas', [EntregaController::class, 'store'])->name('entregas.store');
 Route::get('/entregas', [EntregaController::class, 'index'])->name('entregas.index');
 Route::post('/entregas/{id}/nota', [EntregaController::class, 'atribuirNota'])->name('entregas.nota');
+Route::get('/entregas/corrigidas', [EntregaController::class, 'corrigidas'])->name('entregas.corrigidas');
 
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.view');

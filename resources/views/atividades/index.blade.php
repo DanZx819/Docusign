@@ -6,9 +6,6 @@
 <div class="container py-4">
     <h2>Atividades da Sua Turma</h2>
 
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
 
     @forelse ($atividades as $atividade)
         <div class="card mb-3">
@@ -31,6 +28,13 @@
 
                         <button type="submit" class="btn btn-success">Entregar Atividade</button>
                     </form>
+                    @if ($user && $user->role === 'admin')
+                        <form action="{{ route('atividades.destroy', $atividade->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja deletar esta atividade?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm mt-2">Deletar</button>
+                        </form>
+                    @endif
                 @endif
             </div>
         </div>
